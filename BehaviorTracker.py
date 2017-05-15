@@ -333,8 +333,13 @@ class MainWindow():
         tracker_info['arm_occupancy'] = arm_occupancy
         tracker_info['relative_occupancy'] = arm_occupancy/arm_occupancy.sum()
         np.save(info_file_name, tracker_info)
-        np.savetxt(occ_file_name, arm_occupancy/arm_occupancy.sum(),
-            fmt="%0.5f", delimiter=",")
+
+        # Calculate and save relative occupancy
+        rel_occ = list(arm_occupancy/arm_occupancy.sum())
+        with open(occ_file_name, "w") as csv_file:
+            save_str = "".join(["{:0.5f}, ".format(itm) for itm in rel_occ])
+            print("sep=,", file=csv_file)
+            print(save_str, file=csv_file)
 
     def test_tracking(self):
         timestamps,positions,arm = self.perform_tracking(video_object=None)
