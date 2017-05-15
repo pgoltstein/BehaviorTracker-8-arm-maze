@@ -109,7 +109,7 @@ class MainWindow():
         self.set_maze_save_button.grid(row=41,column=2)
 
         # Tracking (row=50)
-        tk.Frame(height=2, width=200, bd=1, bg="#aaaaaa",
+        tk.Frame(height=2, width=300, bd=1, bg="#aaaaaa",
             relief=tk.SUNKEN).grid(columnspan=3,pady=10)
         tk.Label(self.main, text="Tracking").grid(column=0)
         self.start_tracking_button = tk.Button(self.main, text="Start",
@@ -118,7 +118,7 @@ class MainWindow():
         self.test_tracking_button = tk.Button(self.main, text="Test",
             fg="black", command=self.test_tracking)
         self.test_tracking_button.grid(row=50,column=1)
-        self.remaining_label = tk.Label(self.main, text="Remaining")
+        self.remaining_label = tk.Label(self.main, text="Recording time:")
         self.remaining_label.grid(row=60,column=0,sticky=tk.E)
         self.rem_time_label = tk.Label(self.main, text="")
         self.rem_time_label.grid(row=60,column=1,sticky=tk.W)
@@ -345,8 +345,18 @@ class MainWindow():
         mouse_arm = []
         timestamps = []
 
-        max_time = (float(self.trial_dur_entry.get()) * 60) + time.time()
+        exp_dur_seconds = int(float(self.trial_dur_entry.get()) * 60)
+        max_time = exp_dur_seconds + time.time()
+        time_remaining = int(max_time-time.time())
+        self.rem_time_label.config(text=str(exp_dur_seconds-time_remaining-1)+" s")
+        self.main.update()
+        last_time = max_time
         while time.time() < max_time:
+            time_remaining = int(max_time-time.time())
+            if time_remaining != last_time:
+                self.rem_time_label.config(text=str(exp_dur_seconds-time_remaining-1)+" s")
+                self.main.update()
+                last_time = time_remaining
 
             # Get and process frame
             ret, frame = self.cap.read()
