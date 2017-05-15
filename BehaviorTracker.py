@@ -321,9 +321,6 @@ class MainWindow():
 
     def test_tracking(self):
         timestamps,positions,arm = self.perform_tracking(video_object=None)
-        t0 = timestamps[0]
-        for t,p,a in zip(timestamps,positions,arm):
-            print("{}: {}, {}".format(int(1000*(t-t0)),p, a))
 
     def perform_tracking(self, video_object=None):
 
