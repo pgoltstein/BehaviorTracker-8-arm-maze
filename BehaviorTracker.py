@@ -15,6 +15,16 @@ import cv2
 import numpy as np
 import sys, os, time, datetime
 import UserSettings as settings
+from sys import platform as _platform
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Detect operating system
+if "linux" in _platform.lower():
+   OS = "linux" # linux
+elif "darwin" in _platform.lower():
+   OS = "macosx" # MAC OS X
+elif "win" in _platform.lower():
+   OS = "windows" # Windows
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -267,10 +277,21 @@ class MainWindow():
         os.mkdir(exp_path)
 
         # Define the codec and create VideoWriter object
-        video_file_name = os.path.join(exp_path,'VideoTracking.mov')
-        fourcc = cv2.VideoWriter_fourcc(*'avc1')
-        video_object = cv2.VideoWriter( video_file_name,fourcc, 30.0,
-            (settings.video_resolution[0],settings.video_resolution[1]) )
+        if OS == "macosx":
+            video_file_name = os.path.join(exp_path,'VideoTracking.mov')
+            fourcc = cv2.VideoWriter_fourcc(*'avc1')
+            video_object = cv2.VideoWriter( video_file_name,fourcc, 30.0,
+                (settings.video_resolution[0],settings.video_resolution[1]) )
+        elif OS == "windows":
+            video_file_name = os.path.join(exp_path,'VideoTracking.avi')
+            fourcc = cv2.VideoWriter_fourcc(*'divx')
+            video_object = cv2.VideoWriter( video_file_name,fourcc, 30.0,
+                (settings.video_resolution[0],settings.video_resolution[1]) )
+        elif OS == "linux":
+            video_file_name = os.path.join(exp_path,'VideoTracking.avi')
+            fourcc = cv2.VideoWriter_fourcc(*'MJPG')
+            video_object = cv2.VideoWriter( video_file_name,fourcc, 30.0,
+                (settings.video_resolution[0],settings.video_resolution[1]) )
 
         # Do the tracking
         timestamps,positions,arm = self.perform_tracking(video_object=video_object)
