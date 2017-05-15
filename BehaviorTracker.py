@@ -32,15 +32,24 @@ elif "win" in _platform.lower():
 maze_coordinate_path = os.path.join(settings.data_path,'maze_coordinates.npy')
 if not os.path.isfile(maze_coordinate_path):
     maze_coordinates = {}
-    maze_coordinates['maze_center'] = (310,287)
-    maze_coordinates['maze_radius'] = 30
-    maze_coordinates['maze_arm1'] = (366,214)
+    maze_coordinates['maze_type']     = "n_arm"
+    maze_coordinates['maze_n_arms']   = 8
+    maze_coordinates['maze_center']   = (310,287)
+    maze_coordinates['maze_radius']   = 30
+    maze_coordinates['maze_arm1']     = (366,214)
+    maze_coordinates['maze_area_bbx'] = (0,0,
+        settings.video_resolution[0],settings.video_resolution[1])
+    maze_coordinates['maze_loc_bbxs'] = None
     np.save(maze_coordinate_path,maze_coordinates)
 else:
     maze_coordinates = np.load(maze_coordinate_path).item()
-maze_center = maze_coordinates['maze_center']
-maze_radius = maze_coordinates['maze_radius']
-maze_arm1 = maze_coordinates['maze_arm1']
+maze_type     = maze_coordinates['maze_type']
+maze_n_arms   = maze_coordinates['maze_n_arms']
+maze_center   = maze_coordinates['maze_center']
+maze_radius   = maze_coordinates['maze_radius']
+maze_arm1     = maze_coordinates['maze_arm1']
+maze_area_bbx = maze_coordinates['maze_area_bbx']
+maze_loc_bbxs = maze_coordinates['maze_loc_bbxs']
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -230,9 +239,13 @@ class MainWindow():
     # Maze coordinate functions
     def set_maze_save(self):
         maze_coordinates = {}
-        maze_coordinates['maze_center'] = maze_center
-        maze_coordinates['maze_radius'] = maze_radius
-        maze_coordinates['maze_arm1'] = maze_arm1
+        maze_coordinates['maze_type']     = maze_type
+        maze_coordinates['maze_n_arms']   = maze_n_arms
+        maze_coordinates['maze_center']   = maze_center
+        maze_coordinates['maze_radius']   = maze_radius
+        maze_coordinates['maze_arm1']     = maze_arm1
+        maze_coordinates['maze_area_bbx'] = maze_area_bbx
+        maze_coordinates['maze_loc_bbxs'] = maze_area_bbx
         np.save(maze_coordinate_path,maze_coordinates)
 
     def set_maze_center(self):
@@ -351,7 +364,7 @@ class MainWindow():
         arm1_ang = np.arctan2( maze_arm1[0]-maze_center[0],
                                maze_arm1[1]-maze_center[1] )
         for arm in range(8):
-            arm_angles[arm] = ((arm*np.pi)/4) + arm1_ang
+            arm_angles[arm] = np.mod( ((arm*np.pi)/4) + arm1_ang, 2*np.pi )
 
         # Start window and move to correct position
         cv2.imshow('Preview',np.zeros( (settings.video_resolution[0],
@@ -395,8 +408,8 @@ class MainWindow():
             # Find mouse
             (_,__,___,max_loc) = cv2.minMaxLoc(frame_bw)
             mouse_pos.append(max_loc)
-            mouse_angle = np.pi + np.arctan2( max_loc[0]-maze_center[0],
-                                              max_loc[1]-maze_center[1] )
+            mouse_angle = np.mod( np.arctan2( max_loc[0]-maze_center[0],
+                                    max_loc[1]-maze_center[1] ), 2*np.pi )
             mouse_radius = np.sqrt( ((maze_center[0]-max_loc[0])**2) + \
                                     ((maze_center[1]-max_loc[1])**2) )
 
@@ -406,7 +419,7 @@ class MainWindow():
                 mouse_arm.append(0)
                 plot_col = (255,255,255)
             else:
-                mouse_arm.append( ((np.argmin( np.abs(arm_angles-mouse_angle) )+4) %8) +1 )
+                mouse_arm.append( np.argmin( np.abs(arm_angles-mouse_angle) )+1 )
                 plot_col = (127-(127*np.sin(mouse_angle)),127,127-(127*np.cos(mouse_angle)))
 
             # Draw mouse
