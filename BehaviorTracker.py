@@ -55,79 +55,96 @@ class MainWindow():
         # Start main window
         self.main = main
         self.main.title("Behavior Tracker")
+        tk.Label(self.main, text="-",
+            font=(None,16)).grid(sticky=tk.W, row=0, column=0)
+        tk.Label(self.main, text="Behavior Tracker (8 arm maze)",
+            font=(None,16)).grid(sticky=tk.W, row=0, column=1, columnspan=3)
+        tk.Label(self.main, text="-",
+            font=(None,16)).grid(sticky=tk.W, row=0, column=4)
+        tk.Label(self.main, text="Version 0.1 (May 15th, 2017 by Pieter Goltstein)",
+            fg="#555555",font=(None,9)).grid(sticky=tk.W, column=1, columnspan=3)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1, columnspan=3,pady=10)
 
         # Create mouse selector menu (row=10)
+        tk.Label(self.main, text="Experiment settings").grid(
+            column=1, sticky=tk.W, columnspan=3)
         self.mouse_name = tk.StringVar()
         self.mouse_name.set(settings.mouse_names[0])
-        tk.Label(self.main, text="Mouse: ").grid(row=10,sticky=tk.E)
+        tk.Label(self.main, text="Mouse: ").grid(row=10,column=1,sticky=tk.E)
         self.mouse_menu = tk.OptionMenu( self.main,
                                 self.mouse_name,*settings.mouse_names)
         self.mouse_menu.config(width=10)
-        self.mouse_menu.grid(row=10,column=1,columnspan=2,sticky=tk.W)
+        self.mouse_menu.grid(row=10,column=2,columnspan=2,sticky=tk.W)
 
-        tk.Label(self.main, text="Trial duration: ").grid(row=11,sticky=tk.E)
+        tk.Label(self.main, text="Trial duration: ").grid(
+            row=11,column=1,sticky=tk.E)
         self.trial_dur_entry = tk.Entry( self.main )
         self.trial_dur_entry.insert(0,str(settings.trial_duration))
         self.trial_dur_entry.config(width=5)
-        self.trial_dur_entry.grid(row=11,column=1)
+        self.trial_dur_entry.grid(row=11,column=2)
         self.minute_label = tk.Label(self.main, text="min.")
-        self.minute_label.grid(row=11,column=2,sticky=tk.W)
+        self.minute_label.grid(row=11,column=3,sticky=tk.W)
 
         # Preview (row=20)
-        tk.Frame(height=2, width=300, bd=1, bg="#aaaaaa",
-            relief=tk.SUNKEN).grid(columnspan=3,pady=10)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
         self.preview_button = tk.Button(self.main, text="Preview",
             fg="black", command=self.preview)
-        self.preview_button.grid(column=1, pady=5)
+        self.preview_button.grid(column=2, pady=5)
 
         # Template (row=30)
-        tk.Frame(height=2, width=300, bd=1, bg="#aaaaaa",
-            relief=tk.SUNKEN).grid(columnspan=3,pady=10)
-        tk.Label(self.main, text="Template").grid(sticky=tk.E)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
+        tk.Label(self.main, text="Template").grid(
+            column=1,columnspan=3,sticky=tk.W)
         self.set_template_button = tk.Button(self.main, text="Set",
             fg="black", command=self.set_template)
-        self.set_template_button.grid(row=30,column=0)
+        self.set_template_button.grid(row=30,column=1)
         self.show_template_button = tk.Button(self.main, text="Show",
             fg="black", command=self.show_template)
-        self.show_template_button.grid(row=30,column=1)
+        self.show_template_button.grid(row=30,column=2)
 
         # Maze coordinates (row=40)
-        tk.Frame(height=2, width=300, bd=1, bg="#aaaaaa",
-            relief=tk.SUNKEN).grid(columnspan=3,pady=10)
-        tk.Label(self.main, text="Maze coordinates").grid(column=0)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
+        tk.Label(self.main, text="Maze coordinates").grid(
+            column=1,columnspan=3,sticky=tk.W)
         self.set_maze_center_button = tk.Button(self.main, text="Center",
             fg="black", command=self.set_maze_center)
-        self.set_maze_center_button.grid(row=40,column=0)
+        self.set_maze_center_button.grid(row=40,column=1)
         self.set_maze_radius_button = tk.Button(self.main, text="Radius",
             fg="black", command=self.set_maze_radius)
-        self.set_maze_radius_button.grid(row=40,column=1)
+        self.set_maze_radius_button.grid(row=40,column=2)
         self.set_maze_arm1_button = tk.Button(self.main, text="Arm 1",
             fg="black", command=self.set_maze_arm1)
-        self.set_maze_arm1_button.grid(row=40,column=2)
+        self.set_maze_arm1_button.grid(row=40,column=3)
         self.set_maze_save_button = tk.Button(self.main, text="Save",
             fg="black", command=self.set_maze_save)
-        self.set_maze_save_button.grid(row=41,column=2)
+        self.set_maze_save_button.grid(row=41,column=3)
 
         # Tracking (row=50)
-        tk.Frame(height=2, width=300, bd=1, bg="#aaaaaa",
-            relief=tk.SUNKEN).grid(columnspan=3,pady=10)
-        tk.Label(self.main, text="Tracking").grid(column=0)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
+        tk.Label(self.main, text="Tracking").grid(
+            column=1,columnspan=3,sticky=tk.W)
         self.start_tracking_button = tk.Button(self.main, text="Start",
             fg="black", command=self.track_mouse)
-        self.start_tracking_button.grid(row=50,column=0)
+        self.start_tracking_button.grid(row=50,column=1)
         self.test_tracking_button = tk.Button(self.main, text="Test",
             fg="black", command=self.test_tracking)
-        self.test_tracking_button.grid(row=50,column=1)
+        self.test_tracking_button.grid(row=50,column=2)
         self.remaining_label = tk.Label(self.main, text="Recording time:")
-        self.remaining_label.grid(row=60,column=0,sticky=tk.E)
+        self.remaining_label.grid(row=60,column=1,sticky=tk.E)
         self.rem_time_label = tk.Label(self.main, text="")
-        self.rem_time_label.grid(row=60,column=1,sticky=tk.W)
+        self.rem_time_label.grid(row=60,column=2,sticky=tk.W)
 
         # Quit (row=100)
-        tk.Frame(height=20).grid(columnspan=3,pady=10)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
         self.quit_button = tk.Button(self.main,
             text="Quit", fg="red", command=self.quit)
-        self.quit_button.grid(row=100,column=2,pady=5,sticky=tk.E)
+        self.quit_button.grid(row=100,column=3,pady=5,sticky=tk.E)
 
         # Set main window position
         self.main.update()
