@@ -224,7 +224,7 @@ class MainWindow():
         cv2.circle(image, maze_center, maze_radius, (0,0,255), 1)
         cv2.circle(image, maze_center, arm1_radius, (0,0,255), 1)
         for arm in range(8):
-            arm_ang = ((arm*np.pi)/4) + arm1_ang
+            arm_ang = np.mod( ((arm*np.pi)/4) + arm1_ang, 2*np.pi )
             x = int(maze_center[0] + (arm1_radius * np.sin(arm_ang)))
             y = int(maze_center[1] + (arm1_radius * np.cos(arm_ang)))
             plot_col = (127-(127*np.sin(arm_ang)),127,127-(127*np.cos(arm_ang)))
@@ -345,6 +345,7 @@ class MainWindow():
         tracker_info['arm'] = arm
         tracker_info['arm_occupancy'] = arm_occupancy
         tracker_info['relative_occupancy'] = arm_occupancy/arm_occupancy.sum()
+        tracker_info['template'] = np.array(self.template)
         np.save(info_file_name, tracker_info)
 
         # Calculate and save relative occupancy
@@ -363,8 +364,9 @@ class MainWindow():
         arm_angles = np.zeros(8)
         arm1_ang = np.arctan2( maze_arm1[0]-maze_center[0],
                                maze_arm1[1]-maze_center[1] )
+        arm1_offset = (np.pi/8) - arm1_ang
         for arm in range(8):
-            arm_angles[arm] = np.mod( ((arm*np.pi)/4) + arm1_ang, 2*np.pi )
+            arm_angles[arm] = np.mod( ((arm*np.pi)/4) +arm1_offset +arm1_ang, 2*np.pi )
 
         # Start window and move to correct position
         cv2.imshow('Preview',np.zeros( (settings.video_resolution[0],
@@ -409,7 +411,7 @@ class MainWindow():
             (_,__,___,max_loc) = cv2.minMaxLoc(frame_bw)
             mouse_pos.append(max_loc)
             mouse_angle = np.mod( np.arctan2( max_loc[0]-maze_center[0],
-                                    max_loc[1]-maze_center[1] ), 2*np.pi )
+                                    max_loc[1]-maze_center[1] ) +arm1_offset , 2*np.pi )
             mouse_radius = np.sqrt( ((maze_center[0]-max_loc[0])**2) + \
                                     ((maze_center[1]-max_loc[1])**2) )
 
