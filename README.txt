@@ -2,7 +2,7 @@
 
 BehavioralTracker
 Version 0.1
-May 15th, 2017 by Pieter Goltstein
+May 16th, 2017 by Pieter Goltstein
 
 Tracks a mouse in an 8 armed maze using simple background subtraction
 Outputs
