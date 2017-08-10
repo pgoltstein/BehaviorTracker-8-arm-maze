@@ -10,7 +10,7 @@ mouse_names = ["Tst1","Tst2"]
 trial_duration = 1 # minute
 
 # Location where to store data
-data_path = "/data/track"
+data_path = "D:/data/track"
 
 # Position of the program on the computer monitor
 screen_pos = (200,100) # (x,y)

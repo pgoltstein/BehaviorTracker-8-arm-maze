@@ -16,6 +16,9 @@ import numpy as np
 import sys, os, time, datetime
 import UserSettings as settings
 from sys import platform as _platform
+import nidaqmx
+from nidaqmx.constants import (
+    LineGrouping)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Detect operating system
@@ -28,9 +31,20 @@ elif "win" in _platform.lower():
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Initialize national instruments card
-DIG_OUT_ALL_ZERO = np.zeros((0,), dtype=np.uint8)
-DIG_OUT_ACQ_LOW = np.zeros((0,), dtype=np.uint8)+1
-DIG_OUT_ACQ_HIGH = np.zeros((0,), dtype=np.uint8)+3
+# Warning: WINDOWS ONLY!!!
+if OS == "windows":
+    do_ni = True
+    DIG_OUT_ALL_ZERO = 0
+    DIG_OUT_ACQ_LOW = 1
+    DIG_OUT_ACQ_HIGH = 3
+
+    ni_task = nidaqmx.Task()
+    ni_task.do_channels.add_do_chan(
+        'Dev1/port0/line0:1',
+        line_grouping=LineGrouping.CHAN_FOR_ALL_LINES)
+    ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
+else:
+    do_ni = False
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Maze coordinates
@@ -393,6 +407,9 @@ class MainWindow():
         self.rem_time_label.config(text=str(exp_dur_seconds-time_remaining-1)+" s")
         self.main.update()
         last_time = max_time
+        
+        # Start NI trigger
+        ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
         fr_toggle = 0
         while time.time() < max_time:
             time_remaining = int(max_time-time.time())
@@ -406,12 +423,10 @@ class MainWindow():
 
             # NI frame toggle
             if fr_toggle == 0:
-                # digital_output.WriteDigitalU8( 1, True, 0.1,
-                #     PyDAQmx.DAQmx_Val_GroupByChannel, DIG_OUT_ACQ_HIGH, None, None )
+                ni_task.write(DIG_OUT_ACQ_HIGH, auto_start=True)
                 fr_toggle = 1
             else:
-                # digital_output.WriteDigitalU8( 1, True, 0.1,
-                #     PyDAQmx.DAQmx_Val_GroupByChannel, DIG_OUT_ACQ_LOW, None, None )
+                ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
                 fr_toggle = 0
 
             # Process frame
@@ -457,6 +472,7 @@ class MainWindow():
 
         # Close window and return timestamps and positions
         cv2.destroyAllWindows()
+        ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
         return timestamps,mouse_pos,mouse_arm
 
     def quit(self):
