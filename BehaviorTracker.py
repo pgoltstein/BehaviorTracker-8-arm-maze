@@ -40,7 +40,7 @@ if OS == "windows":
 
     ni_task = nidaqmx.Task()
     ni_task.do_channels.add_do_chan(
-        'Dev1/port0/line0:1',
+        settings.NI_digital_output_port,
         line_grouping=LineGrouping.CHAN_FOR_ALL_LINES)
     ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
 else:
