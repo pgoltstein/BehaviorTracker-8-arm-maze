@@ -26,6 +26,11 @@ elif "darwin" in _platform.lower():
 elif "win" in _platform.lower():
    OS = "windows" # Windows
 
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Initialize national instruments card
+DIG_OUT_ALL_ZERO = np.zeros((0,), dtype=np.uint8)
+DIG_OUT_ACQ_LOW = np.zeros((0,), dtype=np.uint8)+1
+DIG_OUT_ACQ_HIGH = np.zeros((0,), dtype=np.uint8)+3
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Maze coordinates
@@ -388,6 +393,7 @@ class MainWindow():
         self.rem_time_label.config(text=str(exp_dur_seconds-time_remaining-1)+" s")
         self.main.update()
         last_time = max_time
+        fr_toggle = 0
         while time.time() < max_time:
             time_remaining = int(max_time-time.time())
             if time_remaining != last_time:
@@ -395,8 +401,20 @@ class MainWindow():
                 self.main.update()
                 last_time = time_remaining
 
-            # Get and process frame
+            # Get frame
             ret, frame = self.cap.read()
+
+            # NI frame toggle
+            if fr_toggle == 0:
+                # digital_output.WriteDigitalU8( 1, True, 0.1,
+                #     PyDAQmx.DAQmx_Val_GroupByChannel, DIG_OUT_ACQ_HIGH, None, None )
+                fr_toggle = 1
+            else:
+                # digital_output.WriteDigitalU8( 1, True, 0.1,
+                #     PyDAQmx.DAQmx_Val_GroupByChannel, DIG_OUT_ACQ_LOW, None, None )
+                fr_toggle = 0
+
+            # Process frame
             timestamps.append(time.time())
             if video_object is not None:
                 video_object.write(frame)
