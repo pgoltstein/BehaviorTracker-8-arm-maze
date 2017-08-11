@@ -407,9 +407,10 @@ class MainWindow():
         self.rem_time_label.config(text=str(exp_dur_seconds-time_remaining-1)+" s")
         self.main.update()
         last_time = max_time
-        
+
         # Start NI trigger
-        ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
+        if do_ni:
+            ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
         while time.time() < max_time:
             time_remaining = int(max_time-time.time())
             if time_remaining != last_time:
@@ -418,9 +419,11 @@ class MainWindow():
                 last_time = time_remaining
 
             # Get frame
-            ni_task.write(DIG_OUT_ACQ_HIGH, auto_start=True)
+            if do_ni:
+                ni_task.write(DIG_OUT_ACQ_HIGH, auto_start=True)
             ret, frame = self.cap.read()
-            ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
+            if do_ni:
+                ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
 
             # Process frame
             timestamps.append(time.time())
@@ -465,7 +468,8 @@ class MainWindow():
 
         # Close window and return timestamps and positions
         cv2.destroyAllWindows()
-        ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
+        if do_ni:
+            ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
         return timestamps,mouse_pos,mouse_arm
 
     def quit(self):
