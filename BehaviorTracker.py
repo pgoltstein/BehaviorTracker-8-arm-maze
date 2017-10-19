@@ -16,9 +16,6 @@ import numpy as np
 import sys, os, time, datetime
 import UserSettings as settings
 from sys import platform as _platform
-import nidaqmx
-from nidaqmx.constants import (
-    LineGrouping)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Detect operating system
@@ -33,6 +30,9 @@ elif "win" in _platform.lower():
 # Initialize national instruments card
 # Warning: WINDOWS ONLY!!!
 if OS == "windows":
+    import nidaqmx
+    from nidaqmx.constants import (
+        LineGrouping)
     do_ni = True
     DIG_OUT_ALL_ZERO = 0
     DIG_OUT_ACQ_LOW = 1
