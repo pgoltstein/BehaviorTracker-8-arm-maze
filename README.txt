@@ -42,6 +42,10 @@ You can find the versions of the distrbution in the files list on the anaconda c
 
 On Mac OSX 64 bit: The jlaura distribution from the Anaconda Cloud works well.
 >> conda install -c jlaura opencv=3.0.0
+    If you get an error like this:  
+    >>  PackageNotFoundError: Packages missing in current channels:
+            - opencv3 3.0.0* -> tbb
+    Then install tbb (I used the menpo distribution): conda install -c menpo tbb
 
 On Windows 64 bit: Find a distribution that has Opencv3.0.0 and runs python 3.5.x
     on e.g. the Anaconda Cloud.
