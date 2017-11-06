@@ -5,15 +5,20 @@ Version 0.1
 May 16th, 2017 by Pieter Goltstein
 
 Tracks a mouse in an 8 armed maze using simple background subtraction
+
+Inputs
+1. Customizable settings in the UserSettings.py file
+
 Outputs
 1. Video file
     Windows: DIVX codec, .avi container
     Mac OSX: h264 codec, .mov container
     Linux: MJPG codec, .avi container
 2. Tracking coordinates in a numpy file
-3. Analyzed, normalize occupancy per maze arm (Location 0=center) in a .csv file
+3. Analyzed, normalized occupancy per maze arm (Location 0=center) in a .csv file
 
 ----------------------------------------------------------------------
+IMPORTANT!!
 
 Runs on Python version 3.5
 - Tested using python 3.5 Mac OSX 64bit, Opencv3 version 3.0.0 (from jlaura)
@@ -42,7 +47,7 @@ You can find the versions of the distrbution in the files list on the anaconda c
 
 On Mac OSX 64 bit: The jlaura distribution from the Anaconda Cloud works well.
 >> conda install -c jlaura opencv=3.0.0
-    If you get an error like this:  
+    If you get an error like this:
     >>  PackageNotFoundError: Packages missing in current channels:
             - opencv3 3.0.0* -> tbb
     Then install tbb (I used the menpo distribution): conda install -c menpo tbb
