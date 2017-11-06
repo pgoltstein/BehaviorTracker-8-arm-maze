@@ -3,8 +3,11 @@
 ## Settings for BehaviorTracker.py
 #
 
-# Names of mice to be used in experiment
+# Pulldown list contents
 mouse_names = ["Tst1","Tst2"]
+flavor_names = ["Chocolate","Banana","Grape","Citrus","Bacon",\
+                "Raspberry", "Peanutbutter","Raspberry-Peanutbutter"]
+startbox_names = ["North","East","South","West"]
 
 # Duration of a single trial
 trial_duration = 1 # minute
