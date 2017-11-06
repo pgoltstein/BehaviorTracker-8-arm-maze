@@ -6,7 +6,7 @@
 # Pulldown list contents
 mouse_names = ["Tst1","Tst2"]
 flavor_names = ["Chocolate","Banana","Grape","Citrus","Bacon",\
-                "Raspberry", "Peanutbutter","Raspberry-Peanutbutter"]
+                "Raspberry", "Peanutbutter"]
 startbox_names = ["North","East","South","West"]
 
 # Duration of a single trial

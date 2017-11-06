@@ -105,14 +105,30 @@ class MainWindow():
         self.mouse_menu.config(width=10)
         self.mouse_menu.grid(row=10,column=2,columnspan=2,sticky=tk.W)
 
+        self.flavor_name = tk.StringVar()
+        self.flavor_name.set(settings.flavor_names[0])
+        tk.Label(self.main, text="Flavor: ").grid(row=11,column=1,sticky=tk.E)
+        self.flavor_menu = tk.OptionMenu( self.main,
+                                self.flavor_name,*settings.flavor_names)
+        self.flavor_menu.config(width=10)
+        self.flavor_menu.grid(row=11,column=2,columnspan=2,sticky=tk.W)
+
+        self.startbox_name = tk.StringVar()
+        self.startbox_name.set(settings.startbox_names[0])
+        tk.Label(self.main, text="Start box: ").grid(row=12,column=1,sticky=tk.E)
+        self.startbox_menu = tk.OptionMenu( self.main,
+                                self.startbox_name,*settings.startbox_names)
+        self.startbox_menu.config(width=10)
+        self.startbox_menu.grid(row=12,column=2,columnspan=2,sticky=tk.W)
+
         tk.Label(self.main, text="Trial duration: ").grid(
-            row=11,column=1,sticky=tk.E)
+            row=18,column=1,sticky=tk.E)
         self.trial_dur_entry = tk.Entry( self.main )
         self.trial_dur_entry.insert(0,str(settings.trial_duration))
         self.trial_dur_entry.config(width=5)
-        self.trial_dur_entry.grid(row=11,column=2)
+        self.trial_dur_entry.grid(row=18,column=2)
         self.minute_label = tk.Label(self.main, text="min.")
-        self.minute_label.grid(row=11,column=3,sticky=tk.W)
+        self.minute_label.grid(row=18,column=3,sticky=tk.W)
 
         # Preview (row=20)
         tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
@@ -315,14 +331,20 @@ class MainWindow():
     # Tracking functions
     def track_mouse(self):
 
+        # Get identifiers
+        mouse_str = self.mouse_name.get()
+        flavor_str = self.flavor_name.get()
+        startbox_str = self.startbox_name.get()
+
         # Create data directory for this mouse
-        mouse_path = os.path.join(settings.data_path,self.mouse_name.get())
+        mouse_path = os.path.join(settings.data_path,mouse_str)
         if not os.path.isdir(mouse_path):
             os.mkdir(mouse_path)
 
         # Create path for this experiment
         date_time = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-        exp_path = os.path.join(mouse_path,date_time)
+        exp_path = \
+            os.path.join(mouse_path,date_time)+'-'+flavor_str+'-'+startbox_str
         os.mkdir(exp_path)
 
         # Define the codec and create VideoWriter object
@@ -356,7 +378,8 @@ class MainWindow():
             last_time = timestamps[t]
 
         # Save the timestamps and positions
-        info_file_name = os.path.join(exp_path,'TrackingInfo')
+        info_file_name = os.path.join(exp_path,
+            'TrackingInfo-'+mouse_str+'-'+flavor_str+'-'+startbox_str)
         occ_file_name = os.path.join(exp_path,'RelativeOccupancy.csv')
         tracker_info = {}
         tracker_info['timestamps'] = timestamps
@@ -365,6 +388,10 @@ class MainWindow():
         tracker_info['arm_occupancy'] = arm_occupancy
         tracker_info['relative_occupancy'] = arm_occupancy/arm_occupancy.sum()
         tracker_info['template'] = np.array(self.template)
+        tracker_info['datetime'] = date_time
+        tracker_info['mouse'] = mouse_str
+        tracker_info['flavor'] = flavor_str
+        tracker_info['startbox'] = startbox_str
         np.save(info_file_name, tracker_info)
 
         # Calculate and save relative occupancy
