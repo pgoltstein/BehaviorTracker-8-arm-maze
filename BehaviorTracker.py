@@ -29,7 +29,7 @@ elif "win" in _platform.lower():
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Initialize national instruments card
 # Warning: WINDOWS ONLY!!!
-if OS == "windows":
+if OS == "windows" and settings.use_NI == True:
     import nidaqmx
     from nidaqmx.constants import (
         LineGrouping)

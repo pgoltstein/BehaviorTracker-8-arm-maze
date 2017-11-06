@@ -22,5 +22,6 @@ screen_pos = (200,100) # (x,y)
 # Resolution of the acquired video
 video_resolution = (640,480) # (x,y)
 
-# Digital output port (WINDOWS ONLY)
+# Digital output port (will only activate on Windows OS)
+use_NI = True # Set to True/False to (not) use the NI card when running Windows
 NI_digital_output_port = 'Dev1/port0/line0:1'
