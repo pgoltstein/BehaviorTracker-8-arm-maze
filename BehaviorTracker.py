@@ -13,6 +13,7 @@ Created on Wed May 10, 2017
 import tkinter as tk
 import cv2
 import numpy as np
+import scipy.io as io
 import sys, os, time, datetime
 import UserSettings as settings
 from sys import platform as _platform
@@ -393,6 +394,9 @@ class MainWindow():
         tracker_info['flavor'] = flavor_str
         tracker_info['startbox'] = startbox_str
         np.save(info_file_name, tracker_info)
+        
+        # Also save to .mat file
+        io.savemat( info_file_name+'.mat' , tracker_info )
 
         # Calculate and save relative occupancy
         rel_occ = list(arm_occupancy/arm_occupancy.sum())
