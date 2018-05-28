@@ -61,6 +61,7 @@ if not os.path.isfile(maze_coordinate_path):
         settings.video_resolution[0],settings.video_resolution[1])
     maze_coordinates['maze_loc_bbxs'] = None
     np.save(maze_coordinate_path,maze_coordinates)
+    io.savemat(maze_coordinate_path+'.mat',maze_coordinates)
 else:
     maze_coordinates = np.load(maze_coordinate_path).item()
 maze_type     = maze_coordinates['maze_type']
