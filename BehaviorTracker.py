@@ -190,13 +190,18 @@ class MainWindow():
         tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
             relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
         tk.Label(self.main, text="Start box door").grid(
-            column=1,columnspan=3,sticky=tk.W)
+            row=50, column=1, columnspan=2, sticky=tk.W)
+        self.start_box_door_label = tk.Label(self.main, fg="red", text="Closed")
+        self.start_box_door_label.grid(row=50,column=3,sticky=tk.W)
         self.start_box_open = tk.Button(self.main, text="Open",
             fg="black", command=self.open_start_box)
-        self.start_box_open.grid(row=50,column=1)
+        self.start_box_open.grid(row=51,column=1)
         self.start_box_close = tk.Button(self.main, text="Close",
             fg="black", command=self.close_start_box)
-        self.start_box_close.grid(row=50,column=2)
+        self.start_box_close.grid(row=51,column=2)
+        self.start_box_toggle = tk.Button(self.main, text="Toggle",
+            fg="black", command=self.toggle_start_box)
+        self.start_box_toggle.grid(row=51,column=3)
 
         # Tracking (row=60)
         tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
@@ -365,25 +370,46 @@ class MainWindow():
         if do_ni:
             self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
             ni_task.write(self.DIG_OUT_DOOR1, auto_start=True)
-            print("Opening start box door")
         elif do_ni_test:
             self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
             print("NI.write: {}".format(self.DIG_OUT_DOOR1))
         else:
-            print("NI DAQ not enabled")
-
+            print("!! NI DAQ not enabled, door cannot be controlled !!")
+        self.start_box_door_label.config(text="Open")
 
     def close_start_box(self):
         ''' Closess the start box door using NI digital output '''
         if do_ni:
             self.DIG_OUT_DOOR1 = 0
             ni_task.write(self.DIG_OUT_DOOR1, auto_start=True)
-            print("Closing start box door")
         elif do_ni_test:
             self.DIG_OUT_DOOR1 = 0
             print("NI.write: {}".format(self.DIG_OUT_DOOR1))
         else:
-            print("NI DAQ not enabled")
+            print("!! NI DAQ not enabled, door cannot be controlled !!")
+        self.start_box_door_label.config(text="Closed")
+
+    def toggle_start_box(self):
+        ''' Toggles the state of the start box door '''
+        if do_ni:
+            if self.DIG_OUT_DOOR1 == 0:
+                self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+                self.start_box_door_label.config(text="Open")
+            else:
+                self.DIG_OUT_DOOR1 = 0
+                self.start_box_door_label.config(text="Closed")
+            ni_task.write(self.DIG_OUT_DOOR1, auto_start=True)
+        elif do_ni_test:
+            if self.DIG_OUT_DOOR1 == 0:
+                self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+                self.start_box_door_label.config(text="Open")
+            else:
+                self.DIG_OUT_DOOR1 = 0
+                self.start_box_door_label.config(text="Closed")
+            print("NI.write: {}".format(self.DIG_OUT_DOOR1))
+        else:
+            print("!! NI DAQ not enabled, door cannot be controlled !!")
+
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Tracking functions
@@ -566,8 +592,10 @@ class MainWindow():
                 if k == 32 :
                     if self.DIG_OUT_DOOR1 == 0:
                         self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+                        self.start_box_door_label.config(text="Open")
                     else:
                         self.DIG_OUT_DOOR1 = 0
+                        self.start_box_door_label.config(text="Closed")
             except:
                 pass
 
