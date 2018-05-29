@@ -23,7 +23,7 @@ screen_pos = (200,100) # (x,y)
 video_resolution = (640,480) # (x,y)
 
 # Digital output port (will only activate on Windows OS)
-use_NI = False # Set to True/False to (not) use the NI card when running Windows
+use_NI = "test" # True/False/"test" (to use the NI card when running Windows)
 NI_digital_output_port = 'Dev1/port0/line0:2' # make sure to have enough
 NI_ACQ_CHAN = 1 # Bitwise indication, 0=1, 1=2, 2=4, 3=8 etc
 NI_FRAME_CHAN = 2 # Bitwise indication, 0=1, 1=2, 2=4, 3=8 etc

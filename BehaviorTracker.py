@@ -35,6 +35,7 @@ if OS == "windows" and settings.use_NI == True:
     from nidaqmx.constants import (
         LineGrouping)
     do_ni = True
+    do_ni_test = False
     DIG_OUT_ALL_ZERO = 0
     DIG_OUT_ACQ_HIGH = settings.NI_ACQ_CHAN
     DIG_OUT_FRAME_HIGH = settings.NI_FRAME_CHAN
@@ -46,8 +47,18 @@ if OS == "windows" and settings.use_NI == True:
         settings.NI_digital_output_port,
         line_grouping=LineGrouping.CHAN_FOR_ALL_LINES)
     ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
+elif settings.use_NI == "test":
+    do_ni = False
+    do_ni_test = True
+    DIG_OUT_ALL_ZERO = 0
+    DIG_OUT_ACQ_HIGH = settings.NI_ACQ_CHAN
+    DIG_OUT_FRAME_HIGH = settings.NI_FRAME_CHAN
+    DIG_OUT_DOOR1_HIGH = settings.NI_DOOR1_CHAN
+    DIG_OUT_DOOR1 = 0
+    print("NI.write: {}".format(DIG_OUT_ALL_ZERO))
 else:
     do_ni = False
+    do_ni_test = False
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Maze coordinates
@@ -83,6 +94,10 @@ class MainWindow():
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Initialization of the webcam and main window
     def __init__(self, main):
+
+        # Init NI channels
+        if settings.use_NI != False:
+            self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1
 
         # Start main window
         self.main = main
@@ -347,17 +362,28 @@ class MainWindow():
 
     def open_start_box(self):
         ''' Opens the start box door using NI digital output '''
-        print("Opening start box door")
         if do_ni:
-            DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
-            ni_task.write(DIG_OUT_DOOR1, auto_start=True)
+            self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+            ni_task.write(self.DIG_OUT_DOOR1, auto_start=True)
+            print("Opening start box door")
+        elif do_ni_test:
+            self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+            print("NI.write: {}".format(self.DIG_OUT_DOOR1))
+        else:
+            print("NI DAQ not enabled")
+
 
     def close_start_box(self):
         ''' Closess the start box door using NI digital output '''
-        print("Closing start box door")
         if do_ni:
-            DIG_OUT_DOOR1 = 0
-            ni_task.write(DIG_OUT_DOOR1, auto_start=True)
+            self.DIG_OUT_DOOR1 = 0
+            ni_task.write(self.DIG_OUT_DOOR1, auto_start=True)
+            print("Closing start box door")
+        elif do_ni_test:
+            self.DIG_OUT_DOOR1 = 0
+            print("NI.write: {}".format(self.DIG_OUT_DOOR1))
+        else:
+            print("NI DAQ not enabled")
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Tracking functions
@@ -472,8 +498,11 @@ class MainWindow():
 
         # Start NI trigger
         if do_ni:
-            DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_DOOR1
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | self.DIG_OUT_DOOR1
             ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
+        elif do_ni_test:
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | self.DIG_OUT_DOOR1
+            print("NI.write: {}".format(DIG_OUT_WRITE_VALUE))
         while time.time() < max_time:
             time_remaining = int(max_time-time.time())
             if time_remaining != last_time:
@@ -483,12 +512,18 @@ class MainWindow():
 
             # Get frame
             if do_ni:
-                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_FRAME_HIGH | DIG_OUT_DOOR1
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_FRAME_HIGH | self.DIG_OUT_DOOR1
                 ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
+            elif do_ni_test:
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_FRAME_HIGH | self.DIG_OUT_DOOR1
+                print("NI.write: {}".format(DIG_OUT_WRITE_VALUE))
             ret, frame = self.cap.read()
             if do_ni:
-                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_DOOR1
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | self.DIG_OUT_DOOR1
                 ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
+            elif do_ni_test:
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | self.DIG_OUT_DOOR1
+                print("NI.write: {}".format(DIG_OUT_WRITE_VALUE))
 
             # Process frame
             timestamps.append(time.time())
@@ -528,14 +563,22 @@ class MainWindow():
             try:
                 k = cv2.waitKey(1) & 0xff
                 if k == 27 : break
+                if k == 32 :
+                    if self.DIG_OUT_DOOR1 == 0:
+                        self.DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+                    else:
+                        self.DIG_OUT_DOOR1 = 0
             except:
                 pass
 
         # Close window and return timestamps and positions
         cv2.destroyAllWindows()
         if do_ni:
-            DIG_OUT_WRITE_VALUE = DIG_OUT_ALL_ZERO | DIG_OUT_DOOR1
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ALL_ZERO | self.DIG_OUT_DOOR1
             ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
+        elif do_ni_test:
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ALL_ZERO | self.DIG_OUT_DOOR1
+            print("NI.write: {}".format(DIG_OUT_WRITE_VALUE))
         return timestamps,mouse_pos,mouse_arm
 
     def quit(self):
