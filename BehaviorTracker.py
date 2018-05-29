@@ -36,8 +36,10 @@ if OS == "windows" and settings.use_NI == True:
         LineGrouping)
     do_ni = True
     DIG_OUT_ALL_ZERO = 0
-    DIG_OUT_ACQ_LOW = 1
-    DIG_OUT_ACQ_HIGH = 3
+    DIG_OUT_ACQ_HIGH = settings.NI_ACQ_CHAN
+    DIG_OUT_FRAME_HIGH = settings.NI_FRAME_CHAN
+    DIG_OUT_DOOR1_HIGH = settings.NI_DOOR1_CHAN
+    DIG_OUT_DOOR1 = 0
 
     ni_task = nidaqmx.Task()
     ni_task.do_channels.add_do_chan(
@@ -169,21 +171,33 @@ class MainWindow():
             fg="black", command=self.set_maze_save)
         self.set_maze_save_button.grid(row=41,column=3)
 
-        # Tracking (row=50)
+        # Start box door (row=50)
+        tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
+            relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
+        tk.Label(self.main, text="Start box door").grid(
+            column=1,columnspan=3,sticky=tk.W)
+        self.start_box_open = tk.Button(self.main, text="Open",
+            fg="black", command=self.open_start_box)
+        self.start_box_open.grid(row=50,column=1)
+        self.start_box_close = tk.Button(self.main, text="Close",
+            fg="black", command=self.close_start_box)
+        self.start_box_close.grid(row=50,column=2)
+
+        # Tracking (row=60)
         tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
             relief=tk.SUNKEN).grid(column=1,columnspan=3,pady=10)
         tk.Label(self.main, text="Tracking").grid(
             column=1,columnspan=3,sticky=tk.W)
         self.start_tracking_button = tk.Button(self.main, text="Start",
             fg="black", command=self.track_mouse)
-        self.start_tracking_button.grid(row=50,column=1)
+        self.start_tracking_button.grid(row=60,column=1)
         self.test_tracking_button = tk.Button(self.main, text="Test",
             fg="black", command=self.test_tracking)
-        self.test_tracking_button.grid(row=50,column=2)
+        self.test_tracking_button.grid(row=60,column=2)
         self.remaining_label = tk.Label(self.main, text="Recording time:")
-        self.remaining_label.grid(row=60,column=1,sticky=tk.E)
+        self.remaining_label.grid(row=61,column=1,sticky=tk.E)
         self.rem_time_label = tk.Label(self.main, text="")
-        self.rem_time_label.grid(row=60,column=2,sticky=tk.W)
+        self.rem_time_label.grid(row=61,column=2,sticky=tk.W)
 
         # Quit (row=100)
         tk.Frame(height=2, width=260, bd=1, bg="#aaaaaa",
@@ -195,7 +209,7 @@ class MainWindow():
         # Set main window position
         self.main.update()
         w_main = self.main.winfo_width()
-        h_main = 550
+        h_main = 640
         self.main.geometry('{}x{}+{}+{}'.format(w_main, h_main,
             settings.screen_pos[0], settings.screen_pos[1]))
 
@@ -328,6 +342,22 @@ class MainWindow():
                 print("Arm1 @ coordinates: {} (x,y)".format(maze_arm1))
         cv2.setMouseCallback('Template', maze_pos_callback)
 
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    # Tracking functions
+
+    def open_start_box(self):
+        ''' Opens the start box door using NI digital output '''
+        print("Opening start box door")
+        if do_ni:
+            DIG_OUT_DOOR1 = DIG_OUT_DOOR1_HIGH
+            ni_task.write(DIG_OUT_DOOR1, auto_start=True)
+
+    def close_start_box(self):
+        ''' Closess the start box door using NI digital output '''
+        print("Closing start box door")
+        if do_ni:
+            DIG_OUT_DOOR1 = 0
+            ni_task.write(DIG_OUT_DOOR1, auto_start=True)
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     # Tracking functions
@@ -395,7 +425,7 @@ class MainWindow():
         tracker_info['flavor'] = flavor_str
         tracker_info['startbox'] = startbox_str
         np.save(info_file_name, tracker_info)
-        
+
         # Also save to .mat file
         io.savemat( info_file_name+'.mat' , tracker_info )
 
@@ -442,7 +472,8 @@ class MainWindow():
 
         # Start NI trigger
         if do_ni:
-            ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_DOOR1
+            ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
         while time.time() < max_time:
             time_remaining = int(max_time-time.time())
             if time_remaining != last_time:
@@ -452,10 +483,12 @@ class MainWindow():
 
             # Get frame
             if do_ni:
-                ni_task.write(DIG_OUT_ACQ_HIGH, auto_start=True)
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_FRAME_HIGH | DIG_OUT_DOOR1
+                ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
             ret, frame = self.cap.read()
             if do_ni:
-                ni_task.write(DIG_OUT_ACQ_LOW, auto_start=True)
+                DIG_OUT_WRITE_VALUE = DIG_OUT_ACQ_HIGH | DIG_OUT_DOOR1
+                ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
 
             # Process frame
             timestamps.append(time.time())
@@ -501,7 +534,8 @@ class MainWindow():
         # Close window and return timestamps and positions
         cv2.destroyAllWindows()
         if do_ni:
-            ni_task.write(DIG_OUT_ALL_ZERO, auto_start=True)
+            DIG_OUT_WRITE_VALUE = DIG_OUT_ALL_ZERO | DIG_OUT_DOOR1
+            ni_task.write(DIG_OUT_WRITE_VALUE, auto_start=True)
         return timestamps,mouse_pos,mouse_arm
 
     def quit(self):
